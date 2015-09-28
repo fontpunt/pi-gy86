@@ -3011,8 +3011,8 @@ bool MPU6050::writeMemoryBlock(const uint8_t *data, uint16_t dataSize, uint8_t b
     setMemoryBank(bank);
     setMemoryStartAddress(address);
     uint8_t chunkSize;
-    uint8_t *verifyBuffer;
-    uint8_t *progBuffer=0;
+    uint8_t *verifyBuffer=nullptr;
+    uint8_t *progBuffer=nullptr;
     uint16_t i;
     uint8_t j;
     if (verify) verifyBuffer = (uint8_t *)malloc(MPU6050_DMP_MEMORY_CHUNK_SIZE);

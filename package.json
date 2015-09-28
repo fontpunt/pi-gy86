@@ -1,0 +1,23 @@
+{
+  "name": "pi-gy86",
+  "version": "0.1.0",
+  "description": "a nodejs module to communicate with GY-86",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/project-humix/pi-gy86.git"
+  },
+  "author": "yihongwang@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/project-humix/pi-gy86/issues"
+  },
+  "homepage": "https://github.com/project-humix/pi-gy86",
+  "devDependencies": {
+    "nan": "^2.0.9",
+    "node-gyp": "^3.0.3"
+  }
+}

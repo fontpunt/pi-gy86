@@ -1,2 +1,5 @@
 This is a nodejs module that is used to retrieve the data of GY-86 and connect it via respberry pi.
 Please run this on a raspberry.
+Need nodejs > 4.0.0. Please update your gcc/g++ on your raspberry to 4.8. Here is the instruction:
+https://somewideopenspace.wordpress.com/2014/02/28/gcc-4-8-on-raspberry-pi-wheezy/
+

@@ -67,14 +67,14 @@ void MS5611::reset(void) {
     usleep(50000);
 }
 
-uint16_t read16(uint8_t devAddr, uint8_t cmd) {
+uint16_t MS5611::read16(uint8_t devAddr, uint8_t cmd) {
     uint8_t buff[2];
     i2cdev->readBlock(devAddr, cmd, 2, buff);
     uint16_t rev = (((uint16_t) buff[0]) << 8) | (uint16_t) buff[1];
     return rev;
 }
 
-uint32_t read24(uint8_t devAddr, uint8_t cmd) {
+uint32_t MS5611::read24(uint8_t devAddr, uint8_t cmd) {
     uint8_t buff[3];
     i2cdev->readBlock(devAddr, cmd, 3, buff);
     uint32_t rev = (((uint32_t) buff[0]) << 16) | (((uint32_t) buff[1]) << 8)

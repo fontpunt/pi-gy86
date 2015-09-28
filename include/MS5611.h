@@ -37,7 +37,7 @@ public:
 
 private:
     uint16_t read16(uint8_t devAddr, uint8_t cmd);
-    uint32_t read24(uint8_t devAddr, uint8_t cmd)
+    uint32_t read24(uint8_t devAddr, uint8_t cmd);
 
     I2Cdev* i2cdev;
     uint16_t fc[6];

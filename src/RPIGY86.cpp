@@ -336,6 +336,7 @@ void RPIGY86::measure(int* m_ax, int* m_ay, int* m_az, int* m_gx, int* m_gy,
             buff_gz = 0;
     int16_t ax=0, ay=0, az=0, gx=0, gy=0,gz=0;
     static int buffersize = 1000;
+
     while (i < (buffersize + 101)) {
         // read raw accel/gyro measurements from device
         mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
@@ -367,7 +368,6 @@ RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
     static int acel_deadzone=8;
     static int giro_deadzone=1;
-    static int16_t buffersize=1000;
     int ax_offset=0, ay_offset=0, az_offset=0,
          gx_offset=0, gy_offset=0, gz_offset=0;
     int mean_ax=0, mean_ay=0, mean_az=0, mean_gx=0, mean_gy=0, mean_gz=0;

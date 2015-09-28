@@ -334,7 +334,7 @@ RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
     static int acel_deadzone=8;
     static int giro_deadzone=1;
-    static int16_t buffersize=50;
+    static int16_t buffersize=100;
     int     ax_offset=0, ay_offset=0, az_offset=0,
             gx_offset=0, gy_offset=0, gz_offset=0;
     int16_t mean_ax=0, mean_ay=0, mean_az=0, mean_gx=0, mean_gy=0, mean_gz=0;
@@ -354,18 +354,21 @@ RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
           int16_t gx, gy, gz;
           long i=0,buff_ax=0,buff_ay=0,buff_az=0,buff_gx=0,buff_gy=0,buff_gz=0;
 
-          while (i < buffersize){
-              // read raw accel/gyro measurements from device
-              mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+          while (i<(buffersize+101)){
+            // read raw accel/gyro measurements from device
+            mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
+            if (i>100 && i<=(buffersize+100))
+            { //First 100 measures are discarded
               buff_ax+=ax;
               buff_ay+=ay;
               buff_az+=az;
-              buff_gx+=gx/131;
-              buff_gy+=gy/131;
-              buff_gz+=gz/131;
-              i++;
-              usleep(2); //Needed so we don't get repeated measures
+              buff_gx+=gx;
+              buff_gy+=gy;
+              buff_gz+=gz;
+            }
+            i++;
+            usleep(2); //Needed so we don't get repeated measures
           }
 
           mean_ax=buff_ax/buffersize;

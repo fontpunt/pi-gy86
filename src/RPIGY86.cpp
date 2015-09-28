@@ -371,6 +371,13 @@ RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
     int ax_offset=0, ay_offset=0, az_offset=0,
          gx_offset=0, gy_offset=0, gz_offset=0;
     int mean_ax=0, mean_ay=0, mean_az=0, mean_gx=0, mean_gy=0, mean_gz=0;
+    mpu6050->setXAccelOffset(ax_offset);
+    mpu6050->setYAccelOffset(ay_offset);
+    mpu6050->setZAccelOffset(az_offset);
+    mpu6050->setXGyroOffset(gx_offset);
+    mpu6050->setYGyroOffset(gy_offset);
+    mpu6050->setZGyroOffset(gz_offset);
+    usleep(1000);
 
     measure(&mean_ax, &mean_ay, &mean_az, &mean_gx, &mean_gy, &mean_gz);
     usleep(1000);
@@ -386,7 +393,6 @@ RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
         mpu6050->setXAccelOffset(ax_offset);
         mpu6050->setYAccelOffset(ay_offset);
         mpu6050->setZAccelOffset(az_offset);
-
         mpu6050->setXGyroOffset(gx_offset);
         mpu6050->setYGyroOffset(gy_offset);
         mpu6050->setZGyroOffset(gz_offset);

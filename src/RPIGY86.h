@@ -28,6 +28,13 @@ private:
      * callback function for javascript function .getMotion9()
      */
     static void sGetMotion9(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetGryoXOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetGryoYOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetGryoZOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetAccelXOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetAccelYOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetAccelZOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sCalibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args);
     static v8::Eternal<v8::Function> sFunction;
 
     /**
@@ -37,6 +44,14 @@ private:
 
     void getMotion6(const v8::FunctionCallbackInfo<v8::Value> &args);
     void getMotion9(const v8::FunctionCallbackInfo<v8::Value> &args);
+    void setAccelXOffset(int32_t offset);
+    void setAccelYOffset(int32_t offset);
+    void setAccelZOffset(int32_t offset);
+    void setGryoXOffset(int32_t offset);
+    void setGryoYOffset(int32_t offset);
+    void setGryoZOffset(int32_t offset);
+    void calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args);
+
 
     MPU6050* mpu6050;
     HMC5883L* hmc5883l;

@@ -85,10 +85,8 @@ uint32_t MS5611::read24(uint8_t devAddr, uint8_t cmd) {
 void MS5611::readPROM(void) {
     for (uint8_t offset = 0; offset < 6; offset++) {
         fc[offset] = read16(devAddr, MS5611_CMD_READ_PROM + (offset * 2));
-        printf("c %d : %d, ", offset, fc[offset]);
         usleep(50000);
     }
-    printf("\n");
 }
 
 uint32_t MS5611::readRawTemperature(void) {

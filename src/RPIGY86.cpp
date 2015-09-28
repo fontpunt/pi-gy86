@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdint.h>
 #include <string.h>
 #include <algorithm>
@@ -71,6 +72,128 @@ RPIGY86::sGetMotion9(const v8::FunctionCallbackInfo<v8::Value> &args)
 }
 
 /*static*/
+void
+RPIGY86::sSetGryoXOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setGryoXOffset(offset)").ToLocalChecked()));
+    }
+    _this->setGryoXOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+/*static*/
+void
+RPIGY86::sSetGryoYOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setGryoYOffset(offset)").ToLocalChecked()));
+    }
+    _this->setGryoYOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+/*static*/
+void
+RPIGY86::sSetGryoZOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setGryoZOffset(offset)").ToLocalChecked()));
+    }
+    _this->setGryoZOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+
+/*static*/
+void
+RPIGY86::sSetAccelXOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setAccelXOffset(offset)").ToLocalChecked()));
+    }
+    _this->setAccelXOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+/*static*/
+void
+RPIGY86::sSetAccelYOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setAccelYOffset(offset)").ToLocalChecked()));
+    }
+    _this->setAccelYOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+/*static*/
+void
+RPIGY86::sSetAccelZOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setAccelZOffset(offset)").ToLocalChecked()));
+    }
+    _this->setAccelZOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+
+
+/*static*/
+void
+RPIGY86::sCalibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 0 )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: calibrateMPU6050()").ToLocalChecked()));
+    }
+    _this->calibrateMPU6050(args);
+}
+/*static*/
 v8::Local<v8::Function>
 RPIGY86::sGetFunction()
 {
@@ -86,6 +209,20 @@ RPIGY86::sGetFunction()
             v8::FunctionTemplate::New(isolate, sGetMotion6, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("getMotion9").ToLocalChecked(),
             v8::FunctionTemplate::New(isolate, sGetMotion9, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setAccelXOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetAccelXOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setAccelYOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetAccelYOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setAccelZOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetAccelZOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setGryoXOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetGryoXOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setGryoYOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetGryoYOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setGryoZOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetGryoZOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("calibrateMPU6050").ToLocalChecked(),
+                    v8::FunctionTemplate::New(isolate, sCalibrateMPU6050, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         sFunction.Set(isolate, ftmpl->GetFunction());
     }
     return scope.Escape(sFunction.Get(isolate));
@@ -155,6 +292,123 @@ void RPIGY86::getMotion9(const FunctionCallbackInfo<v8::Value> &args)
 
     args.GetReturnValue().Set(rev);
 }
+
+void
+RPIGY86::setGryoXOffset(int32_t offset)
+{
+    mpu6050->setXGyroOffset(offset);
+}
+
+void
+RPIGY86::setGryoYOffset(int32_t offset)
+{
+    mpu6050->setYGyroOffset(offset);
+}
+
+void
+RPIGY86::setGryoZOffset(int32_t offset)
+{
+    mpu6050->setZGyroOffset(offset);
+}
+
+void
+RPIGY86::setAccelXOffset(int32_t offset)
+{
+    mpu6050->setXAccelOffset(offset);
+}
+
+void
+RPIGY86::setAccelYOffset(int32_t offset)
+{
+    mpu6050->setYAccelOffset(offset);
+}
+
+void
+RPIGY86::setAccelZOffset(int32_t offset)
+{
+    mpu6050->setZAccelOffset(offset);
+}
+
+void
+RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    static int acel_deadzone=8;
+    static int giro_deadzone=1;
+    static int16_t buffersize=50;
+    int     ax_offset=0, ay_offset=0, az_offset=0,
+            gx_offset=0, gy_offset=0, gz_offset=0;
+    int16_t mean_ax=0, mean_ay=0, mean_az=0, mean_gx=0, mean_gy=0, mean_gz=0;
+
+    while (1){
+      int ready=0;
+      mpu6050->setXAccelOffset(ax_offset);
+      mpu6050->setYAccelOffset(ay_offset);
+      mpu6050->setZAccelOffset(az_offset);
+
+      mpu6050->setXGyroOffset(gx_offset);
+      mpu6050->setYGyroOffset(gy_offset);
+      mpu6050->setZGyroOffset(gz_offset);
+      sleep(1);
+      {
+          int16_t ax, ay, az;
+          int16_t gx, gy, gz;
+          long i=0,buff_ax=0,buff_ay=0,buff_az=0,buff_gx=0,buff_gy=0,buff_gz=0;
+
+          while (i < buffersize){
+              // read raw accel/gyro measurements from device
+              mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+              buff_ax+=ax;
+              buff_ay+=ay;
+              buff_az+=az;
+              buff_gx+=gx/131;
+              buff_gy+=gy/131;
+              buff_gz+=gz/131;
+              i++;
+              usleep(2); //Needed so we don't get repeated measures
+          }
+
+          mean_ax=buff_ax/buffersize;
+          mean_ay=buff_ay/buffersize;
+          mean_az=buff_az/buffersize;
+          mean_gx=buff_gx/buffersize;
+          mean_gy=buff_gy/buffersize;
+          mean_gz=buff_gz/buffersize;
+      }
+
+      if (std::abs(mean_ax)<=acel_deadzone) ready++;
+      else ax_offset=ax_offset-mean_ax/acel_deadzone;
+
+      if (std::abs(mean_ay)<=acel_deadzone) ready++;
+      else ay_offset=ay_offset-mean_ay/acel_deadzone;
+
+      if (std::abs(16384-mean_az)<=acel_deadzone) ready++;
+      else az_offset=az_offset+(16384-mean_az)/acel_deadzone;
+
+      if (std::abs(mean_gx)<=giro_deadzone) ready++;
+      else gx_offset=gx_offset-mean_gx/(giro_deadzone+1);
+
+      if (std::abs(mean_gy)<=giro_deadzone) ready++;
+      else gy_offset=gy_offset-mean_gy/(giro_deadzone+1);
+
+      if (std::abs(mean_gz)<=giro_deadzone) ready++;
+      else gz_offset=gz_offset-mean_gz/(giro_deadzone+1);
+
+      if (ready==6) break;
+      printf("ready:%d, %d, %d, %d, %d, %d, %d\n", ready, ax_offset, ay_offset,
+           az_offset, gx_offset, gy_offset, gz_offset);
+    }
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Array> rev = v8::Array::New(isolate, 6);
+    rev->Set(0, v8::Int32::New(isolate, ax_offset));
+    rev->Set(1, v8::Int32::New(isolate, ay_offset));
+    rev->Set(2, v8::Int32::New(isolate, az_offset));
+    rev->Set(3, v8::Int32::New(isolate, gx_offset));
+    rev->Set(4, v8::Int32::New(isolate, gy_offset));
+    rev->Set(5, v8::Int32::New(isolate, gz_offset));
+    args.GetReturnValue().Set(rev);
+}
+
 
 NAN_MODULE_INIT(initialize) {
     Nan::HandleScope scope;

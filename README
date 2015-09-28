@@ -3,3 +3,13 @@ Please run this on a raspberry.
 Need nodejs > 4.0.0. Please update your gcc/g++ on your raspberry to 4.8. Here is the instruction:
 https://somewideopenspace.wordpress.com/2014/02/28/gcc-4-8-on-raspberry-pi-wheezy/
 
+All of the APIs are synchronous. Synchronous APIs simplify the operation with the device.
+
+For calibration, only MPU6050 is supported. Be sure to place your GY-86 in horizontal position before you
+call the .calibrateMPU6050() function. Then a set of offsets is returned, including ax, ay, az, gz, gy and gz.
+You can keep the offsets and call .setAccelXOffset(), .setAccelYOffset(), setAccelZOffset(), .setGryoXOffset(),
+.setGryoYOffset() and .setGryoZOffset() accordingly before .getMotion6() or .getMotion9() in your script.
+
+Datasheet:
+MPU6050: https://www.olimex.com/Products/Modules/Sensors/MOD-MPU6050/resources/RM-MPU-60xxA_rev_4.pdf
+HMC5883L: http://www51.honeywell.com/aero/common/documents/myaerospacecatalog-documents/Defense_Brochures-documents/HMC5883L_3-Axis_Digital_Compass_IC.pdf

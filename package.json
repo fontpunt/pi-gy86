@@ -19,5 +19,7 @@
   "devDependencies": {
     "nan": "^2.0.9",
     "node-gyp": "^3.0.3"
-  }
+  },
+  "engines" : { "node" : ">=4.0.0" },
+  "os" : [ "linux" ]
 }

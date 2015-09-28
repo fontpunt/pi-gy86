@@ -34,7 +34,18 @@ private:
     static void sSetAccelXOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
     static void sSetAccelYOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
     static void sSetAccelZOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetGryoRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sGetGryoRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetAccelRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sGetAccelRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args);
     static void sCalibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetMagXOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetMagYOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetMagZOffset(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sGetHeadingXYZ(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sGetHeading(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sSetMagGain(const v8::FunctionCallbackInfo<v8::Value> &args);
+    static void sGetMagGain(const v8::FunctionCallbackInfo<v8::Value> &args);
     static v8::Eternal<v8::Function> sFunction;
 
     /**
@@ -50,8 +61,20 @@ private:
     void setGryoXOffset(int32_t offset);
     void setGryoYOffset(int32_t offset);
     void setGryoZOffset(int32_t offset);
+    void setMagXOffset(int32_t offset);
+    void setMagYOffset(int32_t offset);
+    void setMagZOffset(int32_t offset);
+    void setGryoRangeScale(int32_t scale);
+    void getGryoRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args);
+    void setAccelRangeScale(int32_t scale);
+    void getAccelRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args);
     void calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args);
     void measure(int* m_ax, int* m_ay, int* m_az, int* m_gx, int* m_gy, int* m_gz);
+    void getHeadingXYZ(const v8::FunctionCallbackInfo<v8::Value> &args);
+    void getHeading(const v8::FunctionCallbackInfo<v8::Value> &args);
+    void setMagGain(int32_t gain);
+    void getMagGain(const v8::FunctionCallbackInfo<v8::Value> &args);
+
 
 
     MPU6050* mpu6050;

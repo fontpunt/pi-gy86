@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <algorithm>
+#include <cmath>
+#include <math.h>
 
 #include "RPIGY86.h"
 #include "MPU6050.h"
@@ -14,6 +16,24 @@ using namespace v8;
 #define FUNCTION_TEMPLATE_CLASS "RPiGY86"
 
 v8::Eternal<v8::Function> RPIGY86::sFunction;
+
+//not able to directly set these offset into HMC5883L
+//therefore, keep a local offsets here.
+int32_t gMagXOffset = 0, gMagYOffset = 0, gMagZOffset = 0;
+
+float gMagGainTable[] = { 0.73f, 0.92f, 1.22f, 1.52f, 2.27f, 2.56f, 3.03f, 4.35f };
+
+//GYRO_FS_250 : 0,  //  131 LSB/°/s
+//GYRO_FS_500 : 1,  //  65.5 LSB/°/s
+//GYRO_FS_1000: 2,  //  32.8 LSB/°/s
+//GYRO_FS_2000: 3 };//  16.4 LSB/°/s
+float gGryoScaleTable[] = { 131, 65.5f, 32.8f, 16.4f };
+
+//FS_2   : 0,  //  16384 LSB/g
+//FS_4   : 1,  //   8192 LSB/g
+//FS_8   : 2,  //   4096 LSB/g
+//FS_16  : 3 } //   2048 LSB/g
+int gAccelScaleTable[] = { 16384, 8192, 4096, 2048 };
 
 /*static*/
 void RPIGY86::V8New(const v8::FunctionCallbackInfo<v8::Value> &args)
@@ -157,6 +177,7 @@ RPIGY86::sSetAccelYOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
     }
     _this->setAccelYOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
 }
+
 /*static*/
 void
 RPIGY86::sSetAccelZOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
@@ -175,6 +196,77 @@ RPIGY86::sSetAccelZOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
     _this->setAccelZOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
 }
 
+/*static*/
+void
+RPIGY86::sSetGryoRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setGryoRangeScale(scale)").ToLocalChecked()));
+    }
+    _this->setGryoRangeScale(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+
+/*static*/
+void
+RPIGY86::sGetGryoRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 0 )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: getGryoRangeScale()").ToLocalChecked()));
+    }
+    _this->getGryoRangeScale(args);
+}
+
+/*static*/
+void
+RPIGY86::sSetAccelRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setAccelRangeScale(scale)").ToLocalChecked()));
+    }
+    _this->setAccelRangeScale(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+
+/*static*/
+void
+RPIGY86::sGetAccelRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 0 )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: getAccelRangeScale()").ToLocalChecked()));
+    }
+    _this->getAccelRangeScale(args);
+}
 
 /*static*/
 void
@@ -192,6 +284,130 @@ RPIGY86::sCalibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
                 v8::Exception::SyntaxError(Nan::New("usage: calibrateMPU6050()").ToLocalChecked()));
     }
     _this->calibrateMPU6050(args);
+}
+
+/*static*/
+void
+RPIGY86::sGetHeadingXYZ(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 0 )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: getHeadingXYZ()").ToLocalChecked()));
+    }
+    _this->getHeadingXYZ(args);
+}
+
+/*static*/
+void
+RPIGY86::sGetHeading(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 0 )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: getHeading()").ToLocalChecked()));
+    }
+    _this->getHeading(args);
+}
+
+/*static*/
+void
+RPIGY86::sSetMagXOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setMagXOffset(offset)").ToLocalChecked()));
+    }
+    _this->setMagXOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+/*static*/
+void
+RPIGY86::sSetMagYOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setMagYOffset(offset)").ToLocalChecked()));
+    }
+    _this->setMagYOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+/*static*/
+void
+RPIGY86::sSetMagZOffset(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setMagZOffset(offset)").ToLocalChecked()));
+    }
+    _this->setMagZOffset(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+
+/*static*/
+void
+RPIGY86::sSetMagGain(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 1 || !args[0]->IsNumber() )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: setMagGain(gain)").ToLocalChecked()));
+    }
+    _this->setMagGain(args[0]->ToNumber(Nan::GetCurrentContext()).ToLocalChecked()->Int32Value());
+}
+
+/*static*/
+void
+RPIGY86::sGetMagGain(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    RPIGY86* _this = RPIGY86::Unwrap<RPIGY86>(args.Holder());
+    if ( !_this )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::ReferenceError(Nan::New("not a valid RPiGY86 object").ToLocalChecked()));
+    }
+    if ( args.Length()  != 0 )
+    {
+        args.GetIsolate()->ThrowException(
+                v8::Exception::SyntaxError(Nan::New("usage: getMagGain()").ToLocalChecked()));
+    }
+    _this->getMagGain(args);
 }
 /*static*/
 v8::Local<v8::Function>
@@ -221,8 +437,20 @@ RPIGY86::sGetFunction()
             v8::FunctionTemplate::New(isolate, sSetGryoYOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("setGryoZOffset").ToLocalChecked(),
             v8::FunctionTemplate::New(isolate, sSetGryoZOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setGryoRangeScale").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetGryoRangeScale, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("getGryoRangeScale").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sGetGryoRangeScale, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setAccelRangeScale").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetAccelRangeScale, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("getAccelRangeScale").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sGetAccelRangeScale, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("calibrateMPU6050").ToLocalChecked(),
-                    v8::FunctionTemplate::New(isolate, sCalibrateMPU6050, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+            v8::FunctionTemplate::New(isolate, sCalibrateMPU6050, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("getHeadingXYZ").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sGetHeadingXYZ, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("getHeading").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sGetHeading, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         sFunction.Set(isolate, ftmpl->GetFunction());
     }
     return scope.Escape(sFunction.Get(isolate));
@@ -286,8 +514,8 @@ void RPIGY86::getMotion9(const FunctionCallbackInfo<v8::Value> &args)
     rev->Set(5, v8::Int32::New(isolate, gz));
 
     hmc5883l->getHeading(&mx, &my, &mz);
-    rev->Set(6, v8::Int32::New(isolate, mx));
-    rev->Set(7, v8::Int32::New(isolate, my));
+    rev->Set(6, v8::Int32::New(isolate, mx - gMagXOffset));
+    rev->Set(7, v8::Int32::New(isolate, my - gMagYOffset));
     rev->Set(8, v8::Int32::New(isolate, mz));
 
     args.GetReturnValue().Set(rev);
@@ -327,6 +555,63 @@ void
 RPIGY86::setAccelZOffset(int32_t offset)
 {
     mpu6050->setZAccelOffset(offset);
+}
+
+void
+RPIGY86::setGryoRangeScale(int32_t scale)
+{
+    mpu6050->setFullScaleGyroRange(scale);
+}
+
+void
+RPIGY86::getGryoRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    uint8_t scale = mpu6050->getFullScaleGyroRange();
+    args.GetReturnValue().Set(v8::Uint32::New(args.GetIsolate(), scale));
+}
+
+void
+RPIGY86::setAccelRangeScale(int32_t scale)
+{
+    mpu6050->setFullScaleAccelRange(scale);
+}
+
+void
+RPIGY86::getAccelRangeScale(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    uint8_t scale = mpu6050->getFullScaleAccelRange();
+    args.GetReturnValue().Set(v8::Uint32::New(args.GetIsolate(), scale));
+}
+
+void
+RPIGY86::setMagXOffset(int32_t offset)
+{
+    gMagXOffset = offset;
+}
+
+void
+RPIGY86::setMagYOffset(int32_t offset)
+{
+    gMagYOffset = offset;
+}
+
+void
+RPIGY86::setMagZOffset(int32_t offset)
+{
+    gMagZOffset = offset;
+}
+
+void
+RPIGY86::setMagGain(int32_t gain)
+{
+    hmc5883l->setGain(gain);
+}
+
+void
+RPIGY86::getMagGain(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    uint8_t gain = hmc5883l->getGain();
+    args.GetReturnValue().Set(v8::Uint32::New(args.GetIsolate(), gain));
 }
 
 void RPIGY86::measure(int* m_ax, int* m_ay, int* m_az, int* m_gx, int* m_gy,
@@ -432,6 +717,43 @@ RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
     args.GetReturnValue().Set(rev);
 }
 
+void
+RPIGY86::getHeadingXYZ(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    int16_t mx, my, mz;
+
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Local<v8::Array> rev = v8::Array::New(isolate, 3);
+    hmc5883l->getHeading(&mx, &my, &mz);
+    rev->Set(0, v8::Int32::New(isolate, mx - gMagXOffset));
+    rev->Set(1, v8::Int32::New(isolate, my - gMagYOffset));
+    rev->Set(2, v8::Int32::New(isolate, mz));
+
+    args.GetReturnValue().Set(rev);
+}
+
+void
+RPIGY86::getHeading(const v8::FunctionCallbackInfo<v8::Value> &args)
+{
+    int16_t mx, my, mz;
+    //todo: get this value from somewhere
+    static float declination = -4.28;
+    uint8_t gain = hmc5883l->getGain();
+    float scale = gMagGainTable[gain];
+    hmc5883l->getHeading(&mx, &my, &mz);
+
+    float myf = (my - gMagXOffset) * scale;
+    float mxf = (mx - gMagYOffset) * scale;
+    float heading = atan2(myf, mxf);
+    if(heading < 0)
+      heading += 2 * M_PI;
+    heading = heading * 180/M_PI + declination;
+    if ( heading < 0 ) {
+        heading += 360;
+    }
+
+    args.GetReturnValue().Set(v8::Number::New(args.GetIsolate(), heading));
+}
 
 NAN_MODULE_INIT(initialize) {
     Nan::HandleScope scope;

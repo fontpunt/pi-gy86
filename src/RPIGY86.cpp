@@ -752,8 +752,8 @@ RPIGY86::getHeading(const v8::FunctionCallbackInfo<v8::Value> &args)
     float scale = gMagGainTable[gain];
     hmc5883l->getHeading(&mx, &my, &mz);
 
-    float myf = (my - gMagXOffset) * scale;
-    float mxf = (mx - gMagYOffset) * scale;
+    float myf = (my - gMagYOffset) * scale;
+    float mxf = (mx - gMagXOffset) * scale;
     float heading = atan2(myf, mxf);
     if(heading < 0)
       heading += 2 * M_PI;

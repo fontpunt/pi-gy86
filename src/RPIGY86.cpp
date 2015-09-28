@@ -445,6 +445,10 @@ RPIGY86::sGetFunction()
             v8::FunctionTemplate::New(isolate, sSetAccelRangeScale, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("getAccelRangeScale").ToLocalChecked(),
             v8::FunctionTemplate::New(isolate, sGetAccelRangeScale, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("getMagGain").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sGetMagGain, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setMagGain").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetMagGain, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("calibrateMPU6050").ToLocalChecked(),
             v8::FunctionTemplate::New(isolate, sCalibrateMPU6050, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("getHeadingXYZ").ToLocalChecked(),

@@ -7,7 +7,9 @@
           'target_name': 'rpi_gy86',
           'sources': ['./src/RPIGY86.cpp'],
           'dependencies': ['rpi_libgy86'],
-          'include_dirs': ['<!(node -e "require(\'nan\')")']
+          'include_dirs': ['<!(node -e "require(\'nan\')")',
+            './include'
+          ]
         },
 
         {

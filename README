@@ -12,7 +12,10 @@ a set of offsets is returned, including ax, ay, az, gz, gy and gz. You can
 keep the offsets and call .setAccelXOffset(), .setAccelYOffset(), 
 setAccelZOffset(), .setGryoXOffset(), .setGryoYOffset() and 
 .setGryoZOffset() accordingly before .getMotion6() or .getMotion9() 
-in your script.
+in your script. For HMC5883L, you can use python program in this page
+http://blog.bitify.co.uk/2013/11/connecting-and-calibrating-hmc5883l.html
+to do the calibration and use .setMagXOffset(), .setMagYOffset(),
+.setMagZOffset() APIs to apply the offsets.
 
 Datasheet:
 MPU6050: https://www.olimex.com/Products/Modules/Sensors/MOD-MPU6050/resources/RM-MPU-60xxA_rev_4.pdf

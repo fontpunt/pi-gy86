@@ -51,6 +51,7 @@ private:
     void setGryoYOffset(int32_t offset);
     void setGryoZOffset(int32_t offset);
     void calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args);
+    void measure(int* m_ax, int* m_ay, int* m_az, int* m_gx, int* m_gy, int* m_gz);
 
 
     MPU6050* mpu6050;

@@ -329,76 +329,90 @@ RPIGY86::setAccelZOffset(int32_t offset)
     mpu6050->setZAccelOffset(offset);
 }
 
+void RPIGY86::measure(int* m_ax, int* m_ay, int* m_az, int* m_gx, int* m_gy,
+        int* m_gz)
+{
+    int i = 0, buff_ax = 0, buff_ay = 0, buff_az = 0, buff_gx = 0, buff_gy = 0,
+            buff_gz = 0;
+    int16_t ax=0, ay=0, az=0, gx=0, gy=0,gz=0;
+    static int buffersize = 1000;
+    while (i < (buffersize + 101)) {
+        // read raw accel/gyro measurements from device
+        mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+        if (i > 100 && i <= (buffersize + 100)) { //First 100 measures are discarded
+            buff_ax += ax;
+            buff_ay += ay;
+            buff_az += az;
+            buff_gx += gx;
+            buff_gy += gy;
+            buff_gz += gz;
+        }
+        i++;
+        usleep(2); //Needed so we don't get repeated measures
+    }
+
+    *m_ax = buff_ax / buffersize;
+    *m_ay = buff_ay / buffersize;
+    *m_az = buff_az / buffersize;
+    *m_gx = buff_gx / buffersize;
+    *m_gy = buff_gy / buffersize;
+    *m_gz = buff_gz / buffersize;
+    printf("mean:%d, %d, %d, %d, %d, %d\n", *m_ax, *m_ay, *m_az, *m_gx,
+            *m_gy, *m_gz);
+}
+
 void
 RPIGY86::calibrateMPU6050(const v8::FunctionCallbackInfo<v8::Value> &args)
 {
     static int acel_deadzone=8;
     static int giro_deadzone=1;
-    static int16_t buffersize=100;
-    int     ax_offset=0, ay_offset=0, az_offset=0,
-            gx_offset=0, gy_offset=0, gz_offset=0;
-    int16_t mean_ax=0, mean_ay=0, mean_az=0, mean_gx=0, mean_gy=0, mean_gz=0;
+    static int16_t buffersize=1000;
+    int ax_offset=0, ay_offset=0, az_offset=0,
+         gx_offset=0, gy_offset=0, gz_offset=0;
+    int mean_ax=0, mean_ay=0, mean_az=0, mean_gx=0, mean_gy=0, mean_gz=0;
+
+    measure(&mean_ax, &mean_ay, &mean_az, &mean_gx, &mean_gy, &mean_gz);
+    usleep(1000);
+    ax_offset=-mean_ax/8;
+    ay_offset=-mean_ay/8;
+    az_offset=(16384-mean_az)/8;
+    gx_offset=-mean_gx/4;
+    gy_offset=-mean_gy/4;
+    gz_offset=-mean_gz/4;
 
     while (1){
-      int ready=0;
-      mpu6050->setXAccelOffset(ax_offset);
-      mpu6050->setYAccelOffset(ay_offset);
-      mpu6050->setZAccelOffset(az_offset);
+        int ready=0;
+        mpu6050->setXAccelOffset(ax_offset);
+        mpu6050->setYAccelOffset(ay_offset);
+        mpu6050->setZAccelOffset(az_offset);
 
-      mpu6050->setXGyroOffset(gx_offset);
-      mpu6050->setYGyroOffset(gy_offset);
-      mpu6050->setZGyroOffset(gz_offset);
-      sleep(1);
-      {
-          int16_t ax, ay, az;
-          int16_t gx, gy, gz;
-          long i=0,buff_ax=0,buff_ay=0,buff_az=0,buff_gx=0,buff_gy=0,buff_gz=0;
+        mpu6050->setXGyroOffset(gx_offset);
+        mpu6050->setYGyroOffset(gy_offset);
+        mpu6050->setZGyroOffset(gz_offset);
 
-          while (i<(buffersize+101)){
-            // read raw accel/gyro measurements from device
-            mpu6050->getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+        measure(&mean_ax, &mean_ay, &mean_az, &mean_gx, &mean_gy, &mean_gz);
 
-            if (i>100 && i<=(buffersize+100))
-            { //First 100 measures are discarded
-              buff_ax+=ax;
-              buff_ay+=ay;
-              buff_az+=az;
-              buff_gx+=gx;
-              buff_gy+=gy;
-              buff_gz+=gz;
-            }
-            i++;
-            usleep(2); //Needed so we don't get repeated measures
-          }
+        if (std::abs(mean_ax)<=acel_deadzone) ready++;
+        else ax_offset=ax_offset-mean_ax/acel_deadzone;
 
-          mean_ax=buff_ax/buffersize;
-          mean_ay=buff_ay/buffersize;
-          mean_az=buff_az/buffersize;
-          mean_gx=buff_gx/buffersize;
-          mean_gy=buff_gy/buffersize;
-          mean_gz=buff_gz/buffersize;
-      }
+        if (std::abs(mean_ay)<=acel_deadzone) ready++;
+        else ay_offset=ay_offset-mean_ay/acel_deadzone;
 
-      if (std::abs(mean_ax)<=acel_deadzone) ready++;
-      else ax_offset=ax_offset-mean_ax/acel_deadzone;
+        if (std::abs(16384-mean_az)<=acel_deadzone) ready++;
+        else az_offset=az_offset+(16384-mean_az)/acel_deadzone;
 
-      if (std::abs(mean_ay)<=acel_deadzone) ready++;
-      else ay_offset=ay_offset-mean_ay/acel_deadzone;
+        if (std::abs(mean_gx)<=giro_deadzone) ready++;
+        else gx_offset=gx_offset-mean_gx/(giro_deadzone+1);
 
-      if (std::abs(16384-mean_az)<=acel_deadzone) ready++;
-      else az_offset=az_offset+(16384-mean_az)/acel_deadzone;
+        if (std::abs(mean_gy)<=giro_deadzone) ready++;
+        else gy_offset=gy_offset-mean_gy/(giro_deadzone+1);
 
-      if (std::abs(mean_gx)<=giro_deadzone) ready++;
-      else gx_offset=gx_offset-mean_gx/(giro_deadzone+1);
+        if (std::abs(mean_gz)<=giro_deadzone) ready++;
+        else gz_offset=gz_offset-mean_gz/(giro_deadzone+1);
 
-      if (std::abs(mean_gy)<=giro_deadzone) ready++;
-      else gy_offset=gy_offset-mean_gy/(giro_deadzone+1);
-
-      if (std::abs(mean_gz)<=giro_deadzone) ready++;
-      else gz_offset=gz_offset-mean_gz/(giro_deadzone+1);
-
-      if (ready==6) break;
-      printf("ready:%d, %d, %d, %d, %d, %d, %d\n", ready, ax_offset, ay_offset,
+        if (ready==6) break;
+        printf("ready:%d, %d, %d, %d, %d, %d, %d\n", ready, ax_offset, ay_offset,
            az_offset, gx_offset, gy_offset, gz_offset);
     }
     v8::Isolate* isolate = args.GetIsolate();

@@ -437,6 +437,12 @@ RPIGY86::sGetFunction()
             v8::FunctionTemplate::New(isolate, sSetGryoYOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("setGryoZOffset").ToLocalChecked(),
             v8::FunctionTemplate::New(isolate, sSetGryoZOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setMagXOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetMagXOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setMagYOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetMagYOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
+        otmpl->Set(Nan::New("setMagZOffset").ToLocalChecked(),
+            v8::FunctionTemplate::New(isolate, sSetMagZOffset, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("setGryoRangeScale").ToLocalChecked(),
             v8::FunctionTemplate::New(isolate, sSetGryoRangeScale, v8::Local<v8::Value>(), v8::Signature::New(isolate, ftmpl)));
         otmpl->Set(Nan::New("getGryoRangeScale").ToLocalChecked(),
